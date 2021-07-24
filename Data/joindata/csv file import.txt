@@ -1,0 +1,49 @@
+> LOAD DATA LOCAL INFILE 'C:/Users/hank/Desktop/craigs/data.csv' 
+> INTO TABLE books_mags  
+> FIELDS TERMINATED BY ',' 
+> LINES TERMINATED BY '\n'
+> IGNORE 1 ROWS;
+
+#컨테이너로 파일옮기기
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2 41a3ed8c01b8:/BusStation.csv
+
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\BusStation.csv 41a3ed8c01b8:/BusStation.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\InOutPeople.csv 41a3ed8c01b8:/InOutPeople.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\Bus.csv 41a3ed8c01b8:/Bus.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\OnlyBusRoad.csv 41a3ed8c01b8:/OnlyBusRoad.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\Traffic.csv 41a3ed8c01b8:/Traffic.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\Link.csv 41a3ed8c01b8:/Link.csv
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2\Node.csv 41a3ed8c01b8:/Node.csv
+
+
+
+
+docker cp c:\Users\98dls\Desktop\totaldata\datacsv2 doro:BusStation.csv
+
+ALTER TABLE doro.BusSation DISABLE KEYS; 
+LOAD DATA local INFILE "/BusStation.csv" INTO TABLE doro.BusStation FIELDS TERMINATED BY "," LINES TERMINATED BY '\n'; 
+ALTER TABLE dbName.tableName ENABLE KEYS;
+
+
+docker cp c:path\to\local\file container_name:/path/to/target/dir/
+
+mysql --local-infile=1 -u root -p
+SET GLOBAL local_infile = true;
+SHOW GLOBAL VARIABLES LIKE 'local_infile';
+LOAD DATA local INFILE "/BusStation.csv" INTO TABLE doro.BusStation FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+
+
+
+mysql --local-infile=1 -u root -p
+SET GLOBAL local_infile = true;
+SHOW GLOBAL VARIABLES LIKE 'local_infile';
+LOAD DATA local INFILE "/BusStation.csv" INTO TABLE doro.BusStation FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/InOutPeople.csv" INTO TABLE doro.InOutPeople FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/Bus.csv" INTO TABLE doro.Bus FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/OnlyBusRoad.csv" INTO TABLE doro.OnlyBusRoad FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/Traffic.csv" INTO TABLE doro.Traffic FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/Link.csv" INTO TABLE doro.Link FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+LOAD DATA local INFILE "/Node.csv" INTO TABLE doro.Node FIELDS TERMINATED BY "," LINES TERMINATED BY '\n';
+
+
+ TRUNCATE TABLE OnlyBusRoad;

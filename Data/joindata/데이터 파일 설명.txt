@@ -1,0 +1,16 @@
+BusNumber : 버스정류장에 대한 data 
+	   ex) 버스정류장별 승하차 승객수
+	        버스정류장별 멈추는 버스 수
+
+Test : Link에 대한 data
+	ex) Link별 traffic수
+	    해당 Link가 버스전용차로인지 아닌지 구분 (1/null)
+	    Link의 시작노드와 끝노드에 대한 좌표
+
+middledata : BusNumber 와 Test 를 묶기 위한 중간 과정으로
+	    LinkID StationID 도로명으로 구성되어있음
+
+totaldata : middledata를 통해 BusNumber 와 Test 를 하나의 데이터프레임으로 병합함
+	링크별로 속성들을 구분
+	링크별 traffic
+	 

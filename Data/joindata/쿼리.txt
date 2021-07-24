@@ -1,0 +1,169 @@
+도로, Link      
+[링크ID, 시작노드ID, 종료노드ID, 도로사용여부, 차로수, 도로등급, 도로명, 중용구간여부, 연결로코드, 최고제한속도, 통과제한차량, 통과제한하중, 통과제한높이, 비고, 행정구역변환점, STNL_REG, 도로 타입, 도로수, Shape_sTle, geometry]	]
+
+[LinkID, Source, Target, Lanes, Road_Rank, Road_Name, Multi_Link, Connect, WorkState , X, Y, Traffic, StationID, BusID, People]
+
+INSERT INTO Test (SourceX,SourceY) FROM Node WHERE SELECT (Node.X,Node.Y) FROM Node JOIN Link ON Link.Source = Node.NodeID;
+
+
+WHERE 
+SELECT NodeID, X,Y
+	FROM Node
+inner JOIN Link
+	ON Node.NodeID=Link.Source;
+
+
+INSERT INT Test (SourceX, SourceY)
+FROM Node
+WHERE  (X, Y) IN (
+	SELECT X,Y
+	FROM Node
+	inner JOIN Link
+	ON Node.NodeID=Link.Source);
+
+
+SELECT Test.Source, L.X, L.Y
+FROM (SELECT NodeID,X,Y
+	FROM Node
+	inner JOIN Link
+	ON Node.NodeID=Link.Source) L
+INNER JOIN Test
+ON Test.Source = L.NodeID;
+
+INNER JOIN Link
+	ON Link.LinkID = Source.SourceID
+
+INSERT INTO Test (SourceX, SourceY)
+FROM (SELECT l.Source, n.X, n.Y
+	FROM Node as n
+	INNER JOIN Link as l
+	ON l.Source=n.NodeID) P
+WHERE (SELECT ((P.n.X,P.n.Y) FROM P INNER JOIN;
+
+INSERT INT Test (SourceX, SourceY)
+FROM (WHERE  (X, Y) IN (
+	SELECT X,Y
+	FROM Node
+	inner JOIN Link
+	ON Node.NodeID=Link.Source)) P
+INNER JOIN T
+
+SELECT Link.LinkID, Node.X, Node.Y
+FROM Link
+LEFT OUTER JOIN Node
+ON Link.Source =Node.NodeID;
+
+
+---------------
+#Source X, Y 추가
+INSERT INTO Test (LinkID, Source, Target, Lanes, Road_Rank, Road_Name, Multi_Link, Connect, SourceX, SourceY)
+SELECT l.LinkID, l.Source, l.Target, l.Lanes, l.Road_Rank, l.Road_Name, l.Multi_Link, l.Connect, Node.X, Node.Y
+FROM Link as l
+LEFT OUTER JOIN Node
+ON l.Source =Node.NodeID;
+
+--------------
+UPDATE Test
+SET TargetX=(SELECT Node.X
+		FROM Node
+	WHERE Node.NodeID=Test.Target)
+---------------
+#Target X 추가 
+UPDATE Test, (SELECT l.LinkID, Node.X, Node.Y
+			FROM Link as l
+			LEFT OUTER JOIN Node
+			ON l.Target =Node.NodeID)as B
+SET Test.TargetX = B.X
+WHERE Test.LinkID=B.LinkID;
+------------------
+#Target Y 추가
+UPDATE Test, (SELECT l.LinkID, Node.X, Node.Y
+			FROM Link as l
+			LEFT OUTER JOIN Node
+			ON l.Target =Node.NodeID)as B
+SET Test.TargetY = B.Y
+WHERE Test.LinkID=B.LinkID;
+
+---------------------
+#정류장별  버스 수
+INSERT INTO BusNumber (StationID,NumOfBus)
+SELECT StationID, COUNT(BusID) AS Cnt
+FROM Bus 
+GROUP BY StationID;
+---------------------
+#정류장별 버스 수  + 좌표 추가
+UPDATE BusNumber, (SELECT BusStation.StationID, BusStation.X, BusStation.Y
+		FROM BusStation
+		inner join BusNumber
+		ON BusNumber.StationID = BusStation.StationID) AS B
+SET BusNumber.X = B.X,
+     BusNumber.Y = B.Y
+WHERE BusNumber.StationID = B.StationID;
+---------------------------
+#정류장별 유동인구 수
+SELECT ARSID, (In7 + Out7 + In8 + Out8 +In9+Out9+In17+Out17+In18+Out18+In19+Out19) as People
+FROM InOutPeople
+GROUP BY StationID;
+------------------------------
+#정류장별 유동인구 수 칼럼 추가
+UPDATE BusNumber, (SELECT StationID, (In7 + Out7 + In8 + Out8 +In9+Out9+In17+Out17+In18+Out18+In19+Out19) as People
+			FROM InOutPeople
+			GROUP BY StationID) AS B
+SET BusNumber.NumOfPeo = B.People
+WHERE BusNumber.StationID = B. StationID;
+-------------------
+#트래픽의 도로명 3글자 추출
+SELECT LEFT(StreetName,3)
+FROM Traffic
+-----------------------------
+#도로별 traffic 수
+INSERT INTO tmp_traffic(Day,Code,StreetName,TrafficSum) SELECT Day, Code, LEFT(StreetName,2), (In7+In8+In9+In17+In18+In19)as traf FROM Traffic ;
+-------------------
+#트래픽있는 LinkID찾기
+SELECT Link.LinkID , Link.Road_Name, B.StreetName, B.TrafficSum
+FROM tmp_traffic as B
+LEFT OUTER JOIN Link
+ON LEFT(Link.Road_Name,2) = B.StreetName;
+-------------------------------------------------------------------
+#버스전용차로 표시
+UPDATE Test, (SELECT Link.LinkID , Link.Road_Name, B.RoadName
+				FROM OnlyBusRoad as B
+				LEFT OUTER JOIN Link
+				ON LEFT(Link.Road_Name,3) = LEFT(B.RoadName,3)) as C
+SET Test.OnlyBus=1
+WHERE Test.LinkID = C.LinkID;
+------------------------------------------------------------------
+#버스 정류장 LINKID
+
+SELECT Link.LinkID , Link.Road_Name, B.StationName
+FROM BusStation as B
+LEFT OUTER JOIN Link
+ON LEFT(Link.Road_Name,2) = LEFT(B.StationName,2);
+-------------------------------------------------------
+#버스정류장 linkid 저장
+INSERT INTO tmp_station(LinkID, StationID, Road_Name, Source, X) SELECT Link.LinkID , B.StationID, Link.Road_Name, Link.Source, B.X
+				FROM BusStation as B
+				RIGHT OUTER JOIN Link
+				ON Link.Road_Name = LEFT(B.StationName,2);       
+                
+                
+-----------------------------------------
+#버스정류장 linkID stationID 연결
+ REPLACE INTO tmp_station(LinkID, StationID) SELECT DISTINCT Link.LinkID, B.StationID
+				FROM BusStation as B
+				RIGHT OUTER JOIN Link
+				ON Link.Road_Name = LEFT(B.StationName,2); 
+-------------------------------------------------
+#버스 
+UPDATE Test, BusNumber as b
+SET Test.StationID = b.StationID,
+	Test.NumOfBus = b.NumOfBus,
+    Test.NumOfPeo = b.NumOfPeo
+WHERE Test.LinkID = b.LinkID;
+--------------------------------------------------
+#dataset 총 합침
+UPDATE Test, BusNumber as b
+SET Test.StationID = b.StationID,
+	Test.NumOfBus = b.NumOfBus,
+    Test.NumOfPeo = b.NumOfPeo
+WHERE Test.LinkID = b.LinkID;
